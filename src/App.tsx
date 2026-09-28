@@ -21,6 +21,7 @@ function App() {
         'Mop',
       ],
       supplyLocation: 'Utility room',
+       estimatedTime: 20,
     },
     {
       name: 'Empty kitchen bins',
@@ -36,6 +37,7 @@ function App() {
         'Bin bags',
       ],
       supplyLocation: 'Kitchen cupboard',
+      estimatedTime: 10,
     },
   ])
 
@@ -60,6 +62,7 @@ function App() {
         <div key={task.id} className="task-card">
           <h3>{task.name}</h3>
           <p>{task.frequency}</p>
+          <p>Estimated time: {task.estimatedTime} min</p>
           <p>{task.completed ? 'Completed' : 'Not completed'}</p>
 
           <div className="task-actions">

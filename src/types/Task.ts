@@ -6,4 +6,5 @@ export interface Task {
   instructions: string[]
   supplies: string[]
   supplyLocation: string
+  estimatedTime: number
 }
