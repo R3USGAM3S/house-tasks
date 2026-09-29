@@ -1,48 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Task } from './types/Task'
 import './App.css'
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      name: 'Clean bathroom',
-      id: 1,
-      frequency: 'Weekly',
-      completed: false,
-      instructions: [
-        'Clean sink',
-        'Clean toilet',
-        'Wipe mirror',
-        'Mop floor',
-      ],
-      supplies: [
-        'Bathroom cleaner',
-        'Cloth',
-        'Mop',
-      ],
-      supplyLocation: 'Utility room',
-       estimatedTime: 20,
-    },
-    {
-      name: 'Empty kitchen bins',
-      id: 2,
-      frequency: 'Daily',
-      completed: false,
-      instructions: [
-        'Remove full bin bag',
-        'Replace with a new bag',
-        'Take rubbish to the correct container',
-      ],
-      supplies: [
-        'Bin bags',
-      ],
-      supplyLocation: 'Kitchen cupboard',
-      estimatedTime: 10,
-    },
-  ])
+  const [tasks, setTasks] = useState<Task[]>([])
+    
+
 
   const [openTaskId, setOpenTaskId] = useState<number | null>(null)
-
+useEffect(() => {
+  fetch('http://localhost:3001/api/tasks')
+    .then((response) => response.json())
+    .then((data) => setTasks(data))
+    .catch((error) => console.error('Failed to fetch tasks:', error))
+}, [])
   const toggleTask = (id: number) => {
     setTasks(
       tasks.map((task) =>
