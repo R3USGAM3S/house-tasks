@@ -116,6 +116,36 @@ app.post('/api/tasks', (req, res) => {
     }
   )
 })
+app.patch('/api/tasks/:id', (req, res) => {
+  const id = Number(req.params.id)
+  const body = req.body ?? {}
+
+  if (!Number.isInteger(id)) {
+    res.status(400).json({ errors: ['id must be a number'] })
+    return
+  }
+  if (typeof body.completed !== 'boolean') {
+    res.status(400).json({ errors: ['completed must be true or false'] })
+    return
+  }
+
+  db.run(
+    'UPDATE tasks SET completed = ? WHERE id = ?',
+    [body.completed ? 1 : 0, id],
+    function (error) {
+      if (error) {
+        console.error('Failed to update task:', error.message)
+        res.status(500).json({ error: 'Failed to update task' })
+        return
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Task not found' })
+        return
+      }
+      res.json({ id, completed: body.completed })
+    }
+  )
+})
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
 })
