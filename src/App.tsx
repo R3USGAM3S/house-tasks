@@ -4,16 +4,16 @@ import './App.css'
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([])
-    
+
 
 
   const [openTaskId, setOpenTaskId] = useState<number | null>(null)
-useEffect(() => {
-  fetch('http://localhost:3001/api/tasks')
-    .then((response) => response.json())
-    .then((data) => setTasks(data))
-    .catch((error) => console.error('Failed to fetch tasks:', error))
-}, [])
+  useEffect(() => {
+    fetch('http://localhost:3001/api/tasks')
+      .then((response) => response.json())
+      .then((data) => setTasks(data))
+      .catch((error) => console.error('Failed to fetch tasks:', error))
+  }, [])
   const toggleTask = (id: number) => {
     setTasks(
       tasks.map((task) =>
