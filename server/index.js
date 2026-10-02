@@ -4,8 +4,33 @@ const db = require('./database')
 const app = express()
 const PORT = 3001
 
-app.use(cors())
+app.use(cors({ origin: 'http://localhost:5173' }))
 app.use(express.json())
+
+const allowedFrequencies = ['Daily', 'Weekly', 'Biweekly', 'Monthly']
+
+function validateTask(task) {
+  const errors = []
+
+  if (typeof task.name !== 'string' || task.name.trim() === '') {
+    errors.push('name is required')
+  }
+  if (!allowedFrequencies.includes(task.frequency)) {
+    errors.push(`frequency must be one of: ${allowedFrequencies.join(', ')}`)
+  }
+  if (task.estimatedTime !== undefined &&
+      (!Number.isInteger(task.estimatedTime) || task.estimatedTime <= 0)) {
+    errors.push('estimatedTime must be a positive whole number')
+  }
+  if (task.instructions !== undefined && !Array.isArray(task.instructions)) {
+    errors.push('instructions must be a list')
+  }
+  if (task.supplies !== undefined && !Array.isArray(task.supplies)) {
+    errors.push('supplies must be a list')
+  }
+
+  return errors
+}
 
 app.get('/api/tasks', (req, res) => {
   db.all('SELECT * FROM tasks', (error, rows) => {
@@ -21,8 +46,8 @@ app.get('/api/tasks', (req, res) => {
       frequency: row.frequency,
       completed: Boolean(row.completed),
       estimatedTime: row.estimated_time,
-      instructions: JSON.parse(row.instructions),
-      supplies: JSON.parse(row.supplies),
+      instructions: JSON.parse(row.instructions) ?? [],   
+      supplies: JSON.parse(row.supplies) ?? [], 
       supplyLocation: row.supply_location,
     }))
 
@@ -30,14 +55,22 @@ app.get('/api/tasks', (req, res) => {
   })
 })
 app.post('/api/tasks', (req, res) => {
+  const body = req.body ?? {}
+  const errors = validateTask(body)
+
+  if (errors.length > 0) {
+    res.status(400).json({ errors })
+    return
+  }
+
   const {
     name,
     frequency,
     estimatedTime,
-    instructions,
-    supplies,
-    supplyLocation,
-  } = req.body
+    instructions = [],
+    supplies = [],
+    supplyLocation = '',
+  } = body
 
   const sql = `
     INSERT INTO tasks (
