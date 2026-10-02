@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Task } from './types/Task'
 import './App.css'
+const API_URL = 'http://localhost:3001/api'
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -9,19 +10,34 @@ function App() {
 
   const [openTaskId, setOpenTaskId] = useState<number | null>(null)
   useEffect(() => {
-    fetch('http://localhost:3001/api/tasks')
+   fetch(`${API_URL}/tasks`)
       .then((response) => response.json())
       .then((data) => setTasks(data))
       .catch((error) => console.error('Failed to fetch tasks:', error))
   }, [])
-  const toggleTask = (id: number) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id
-          ? { ...task, completed: !task.completed }
-          : task
+  const toggleTask = async (id: number) => {
+    const task = tasks.find((t) => t.id === id)
+    if (!task) return
+
+    const newCompleted = !task.completed
+
+    try {
+      const response = await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: newCompleted }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`)
+      }
+
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t))
       )
-    )
+    } catch (error) {
+      console.error('Failed to update task:', error)
+    }
   }
 
   return (
